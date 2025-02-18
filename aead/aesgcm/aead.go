@@ -21,17 +21,15 @@ import (
 	"fmt"
 
 	"github.com/tink-crypto/tink-go/v2/insecuresecretdataaccess"
-	"github.com/tink-crypto/tink-go/v2/internal/aead"
 	"github.com/tink-crypto/tink-go/v2/key"
-	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/tink"
 )
 
 const (
 	// ivSize is the acceptable IV size defined by RFC 5116.
-	ivSize = 12
+	defaultIvSize = 12
 	// tagSize is the acceptable tag size defined by RFC 5116.
-	tagSize = 16
+	defaultTagSize = 16
 )
 
 // fullAEAD is an implementation of the [tink.AEAD] interface with AES-GCM.
@@ -45,25 +43,6 @@ type fullAEAD struct {
 
 var _ tink.AEAD = (*fullAEAD)(nil)
 
-// Encrypt encrypts plaintext with associatedData.
-//
-// The returned ciphertext is of the form:
-//
-//	prefix || iv || ciphertext || tag
-//
-// where prefix is the key's output prefix, iv is a random 12-byte IV,
-// ciphertext is the encrypted plaintext, and tag is a 16-byte tag.
-func (a *fullAEAD) Encrypt(plaintext, associatedData []byte) ([]byte, error) {
-	if err := aead.CheckPlaintextSize(uint64(len(plaintext))); err != nil {
-		return nil, err
-	}
-	iv := random.GetRandomBytes(ivSize)
-	dst := make([]byte, 0, len(a.prefix)+len(iv)+len(plaintext)+a.cipher.Overhead())
-	dst = append(dst, a.prefix...)
-	dst = append(dst, iv...)
-	return a.cipher.Seal(dst, iv, plaintext, associatedData), nil
-}
-
 // Decrypt decrypts ciphertext with associatedData.
 //
 // The ciphertext is assumed to be of the form:
@@ -74,6 +53,9 @@ func (a *fullAEAD) Encrypt(plaintext, associatedData []byte) ([]byte, error) {
 // the encrypted plaintext, and tag is the 16-byte tag.
 // prefix must match the key's output prefix. The prefix may be empty.
 func (a *fullAEAD) Decrypt(ciphertext, associatedData []byte) ([]byte, error) {
+	ivSize := a.cipher.NonceSize()
+	tagSize := a.cipher.Overhead()
+
 	if len(ciphertext) < len(a.prefix)+ivSize+tagSize {
 		return nil, fmt.Errorf("ciphertext with size %d is too short", len(ciphertext))
 	}
@@ -93,17 +75,17 @@ func NewAEAD(k *Key) (tink.AEAD, error) {
 	if k.parameters.KeySizeInBytes() != 16 && k.parameters.KeySizeInBytes() != 32 {
 		return nil, fmt.Errorf("aesgcm.NewAEAD: unsupported key size: got %v, want 16 or 32", k.parameters.KeySizeInBytes())
 	}
-	if k.parameters.IVSizeInBytes() != ivSize {
-		return nil, fmt.Errorf("aesgcm.NewAEAD: unsupported IV size: got %v, want %v", k.parameters.IVSizeInBytes(), ivSize)
+	if k.parameters.IVSizeInBytes() != defaultIvSize {
+		return nil, fmt.Errorf("aesgcm.NewAEAD: unsupported IV size: got %v, want %v", k.parameters.IVSizeInBytes(), defaultIvSize)
 	}
-	if k.parameters.TagSizeInBytes() != tagSize {
-		return nil, fmt.Errorf("aesgcm.NewAEAD: unsupported tag size: got %v, want %v", k.parameters.TagSizeInBytes(), tagSize)
+	if k.parameters.TagSizeInBytes() != defaultTagSize {
+		return nil, fmt.Errorf("aesgcm.NewAEAD: unsupported tag size: got %v, want %v", k.parameters.TagSizeInBytes(), defaultTagSize)
 	}
 	c, err := aes.NewCipher(k.KeyBytes().Data(insecuresecretdataaccess.Token{}))
 	if err != nil {
 		return nil, fmt.Errorf("aesgcm.NewAEAD: failed to initialize cipher")
 	}
-	aeadCipher, err := cipher.NewGCM(c)
+	aeadCipher, err := cipher.NewGCMWithRandomNonce(c)
 	if err != nil {
 		return nil, fmt.Errorf("aesgcm.NewAEAD: failed to create cipher.AEAD")
 	}
