@@ -45,13 +45,19 @@ func TestComputeHash(t *testing.T) {
 	var tests = []struct {
 		hashFunc     func() hash.Hash
 		expectedHash string
+		fips         bool
 	}{
-		{subtle.GetHashFunc("SHA1"), "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0"},
-		{subtle.GetHashFunc("SHA256"), "185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969"},
-		{subtle.GetHashFunc("SHA512"), "3615f80c9d293ed7402687f94b22d58e529b8cc7916f8fac7fddf7fbd5af4cf777d3d795a7a00a16bf7e7f3fb9561ee9baae480da9fe7a18769e71886b03f315"},
+		{subtle.GetHashFunc("SHA1"), "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0", false},
+		{subtle.GetHashFunc("SHA256"), "185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969", true},
+		{subtle.GetHashFunc("SHA512"), "3615f80c9d293ed7402687f94b22d58e529b8cc7916f8fac7fddf7fbd5af4cf777d3d795a7a00a16bf7e7f3fb9561ee9baae480da9fe7a18769e71886b03f315", true},
 	}
 
 	for _, tt := range tests {
+		if !tt.fips && fipsEnabled() {
+			t.Log("skipping non-FIPS test in FIPS mode.")
+			continue
+		}
+
 		hashFunc := tt.hashFunc
 		if hashFunc == nil {
 			t.Fatal("got nil hash func")

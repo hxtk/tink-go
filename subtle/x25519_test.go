@@ -20,12 +20,16 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/crypto/curve25519"
 	"github.com/tink-crypto/tink-go/v2/subtle"
 	"github.com/tink-crypto/tink-go/v2/testutil"
+	"golang.org/x/crypto/curve25519"
 )
 
 func TestComputeSharedSecretX25519WithRFCTestVectors(t *testing.T) {
+	if fipsEnabled() {
+		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
+	}
+
 	// Test vectors are defined at
 	// https://datatracker.ietf.org/doc/html/rfc7748#section-6.1.
 	tests := []struct {
@@ -80,6 +84,10 @@ type x25519Case struct {
 }
 
 func TestComputeSharedSecretX25519WithWycheproofVectors(t *testing.T) {
+	if fipsEnabled() {
+		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
+	}
+
 	suite := new(x25519Suite)
 	if err := testutil.PopulateSuite(suite, "x25519_test.json"); err != nil {
 		t.Fatalf("testutil.PopulateSuite: %v", err)
@@ -128,6 +136,10 @@ func TestComputeSharedSecretX25519WithWycheproofVectors(t *testing.T) {
 }
 
 func TestComputeSharedSecretX25519Fails(t *testing.T) {
+	if fipsEnabled() {
+		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
+	}
+
 	pubs := []string{
 		// Should fail on non-32-byte inputs.
 		"77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c",
@@ -162,6 +174,10 @@ func TestComputeSharedSecretX25519Fails(t *testing.T) {
 }
 
 func TestPublicFromPrivateX25519WithRFCTestVectors(t *testing.T) {
+	if fipsEnabled() {
+		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
+	}
+
 	// Test vectors are defined at
 	// https://datatracker.ietf.org/doc/html/rfc7748#section-6.1.
 	tests := []struct {
@@ -190,6 +206,10 @@ func TestPublicFromPrivateX25519WithRFCTestVectors(t *testing.T) {
 }
 
 func TestPublicFromPrivateX25519Fails(t *testing.T) {
+	if fipsEnabled() {
+		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
+	}
+
 	// PublicFromPrivateX25519 fails on non-32-byte private keys.
 	privs := []string{
 		"77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c",
