@@ -30,9 +30,6 @@ import (
 )
 
 const (
-	ivSize  = 12
-	tagSize = 16
-
 	intSize = 32 << (^uint(0) >> 63) // 32 or 64
 	maxInt  = 1<<(intSize-1) - 1
 )
@@ -87,7 +84,7 @@ func newAESGCMCipher(key []byte) (cipher.AEAD, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize cipher")
 	}
-	aesGCM, err := cipher.NewGCM(c)
+	aesGCM, err := newGCM(c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create cipher.AEAD")
 	}
