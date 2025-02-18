@@ -19,8 +19,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/testing/protocmp"
 	"github.com/tink-crypto/tink-go/v2/aead"
 	"github.com/tink-crypto/tink-go/v2/hybrid"
 	"github.com/tink-crypto/tink-go/v2/insecurecleartextkeyset"
@@ -28,6 +26,8 @@ import (
 	"github.com/tink-crypto/tink-go/v2/keyset"
 	"github.com/tink-crypto/tink-go/v2/mac"
 	"github.com/tink-crypto/tink-go/v2/testing/fakemonitoring"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
 )
@@ -124,6 +124,10 @@ func TestWriteAndReadInJson(t *testing.T) {
 }
 
 func TestLegacyKeysetHandle(t *testing.T) {
+	if fipsEnabled() {
+		t.Skip("Skipping test cases for non-FIPS-compliant uses when testing in FIPS mode.")
+	}
+
 	handle, err := keyset.NewHandle(hybrid.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_AES_128_GCM_Key_Template())
 	if err != nil {
 		t.Fatalf(" keyset.NewHandle(hybrid.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_AES_128_GCM_Key_Template()) err = %v, want nil", err)
