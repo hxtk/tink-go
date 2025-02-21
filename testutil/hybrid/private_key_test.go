@@ -18,17 +18,22 @@ import (
 	"bytes"
 	"testing"
 
-	"google.golang.org/protobuf/proto"
 	"github.com/tink-crypto/tink-go/v2/hybrid"
 	"github.com/tink-crypto/tink-go/v2/keyset"
-	"github.com/tink-crypto/tink-go/v2/subtle/random"
-	"github.com/tink-crypto/tink-go/v2/testkeyset"
-	testutilhybrid "github.com/tink-crypto/tink-go/v2/testutil/hybrid"
 	hpkepb "github.com/tink-crypto/tink-go/v2/proto/hpke_go_proto"
 	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
+	"github.com/tink-crypto/tink-go/v2/subtle/random"
+	"github.com/tink-crypto/tink-go/v2/testkeyset"
+	"github.com/tink-crypto/tink-go/v2/testutil"
+	testutilhybrid "github.com/tink-crypto/tink-go/v2/testutil/hybrid"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestKeysetHandleFromSerializedPrivateKey(t *testing.T) {
+	if testutil.FIPSEnabled() {
+		t.Skip("Skipping non-FIPS primitives in FIPS-enabled test.")
+	}
+
 	// Obtain private and public key handles via key template.
 	keyTemplate := hybrid.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305_Raw_Key_Template()
 	privHandle, err := keyset.NewHandle(keyTemplate)
@@ -75,6 +80,10 @@ func TestKeysetHandleFromSerializedPrivateKey(t *testing.T) {
 }
 
 func TestKeysetHandleFromSerializedPrivateKeyInvalidTemplateFails(t *testing.T) {
+	if testutil.FIPSEnabled() {
+		t.Skip("Skipping non-FIPS primitives in FIPS-enabled test.")
+	}
+
 	keyTemplate := hybrid.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305_Raw_Key_Template()
 	privHandle, err := keyset.NewHandle(keyTemplate)
 	if err != nil {
