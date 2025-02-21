@@ -45,6 +45,9 @@ func TestGetPrimitiveWorks(t *testing.T) {
 		hashName string
 		keyValue []byte
 		tagSize  uint32
+
+		// Whether a primitive is FIPS 140-3 compliant
+		fips bool
 	}{
 		{
 			name: "SHA1",
@@ -58,6 +61,7 @@ func TestGetPrimitiveWorks(t *testing.T) {
 			hashName: "SHA1",
 			keyValue: keyValue,
 			tagSize:  20,
+			fips:     false,
 		}, {
 			name: "SHA256",
 			key: &hmacpb.HmacKey{
@@ -70,6 +74,7 @@ func TestGetPrimitiveWorks(t *testing.T) {
 			hashName: "SHA256",
 			keyValue: keyValue,
 			tagSize:  32,
+			fips:     true,
 		}, {
 			name: "SHA512",
 			key: &hmacpb.HmacKey{
@@ -82,10 +87,15 @@ func TestGetPrimitiveWorks(t *testing.T) {
 			hashName: "SHA512",
 			keyValue: keyValue,
 			tagSize:  64,
+			fips:     true,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if !tc.fips && testutil.FIPSEnabled() {
+				t.Skip("Skipping non-FIPS primitive in FIPS-mode tests.")
+			}
+
 			serializedKey, err := proto.Marshal(tc.key)
 			if err != nil {
 				t.Fatalf("proto.Marshal() err = %q, want nil", err)
