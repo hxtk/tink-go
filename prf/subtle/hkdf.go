@@ -17,9 +17,8 @@ package subtle
 import (
 	"fmt"
 	"hash"
-	"io"
 
-	"golang.org/x/crypto/hkdf"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/subtle"
 )
 
@@ -68,11 +67,9 @@ func ValidateHKDFPRFParams(hash string, keySize uint32, salt []byte) error {
 
 // ComputePRF computes the HKDF for the given key and data, returning outputLength bytes.
 func (h HKDFPRF) ComputePRF(data []byte, outputLength uint32) ([]byte, error) {
-	kdf := hkdf.New(h.h, h.key, h.salt, data)
-	output := make([]byte, outputLength)
-	_, err := io.ReadAtLeast(kdf, output, int(outputLength))
+	output, err := fips140.ComputeHKDF(h.h, h.key, h.salt, data, outputLength)
 	if err != nil {
 		return nil, fmt.Errorf("Error computing HKDF: %v", err)
 	}
-	return output[:outputLength], nil
+	return output, nil
 }

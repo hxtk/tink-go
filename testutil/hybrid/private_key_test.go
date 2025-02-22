@@ -19,18 +19,18 @@ import (
 	"testing"
 
 	"github.com/tink-crypto/tink-go/v2/hybrid"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/keyset"
 	hpkepb "github.com/tink-crypto/tink-go/v2/proto/hpke_go_proto"
 	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
 	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/testkeyset"
-	"github.com/tink-crypto/tink-go/v2/testutil"
 	testutilhybrid "github.com/tink-crypto/tink-go/v2/testutil/hybrid"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestKeysetHandleFromSerializedPrivateKey(t *testing.T) {
-	if testutil.FIPSEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping non-FIPS primitives in FIPS-enabled test.")
 	}
 
@@ -80,7 +80,7 @@ func TestKeysetHandleFromSerializedPrivateKey(t *testing.T) {
 }
 
 func TestKeysetHandleFromSerializedPrivateKeyInvalidTemplateFails(t *testing.T) {
-	if testutil.FIPSEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping non-FIPS primitives in FIPS-enabled test.")
 	}
 

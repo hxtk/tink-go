@@ -19,6 +19,7 @@ import (
 	"hash"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/subtle"
 )
 
@@ -53,7 +54,7 @@ func TestComputeHash(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if !tt.fips && fipsEnabled() {
+		if !tt.fips && fips140.FIPSEnabled() {
 			t.Log("skipping non-FIPS test in FIPS mode.")
 			continue
 		}

@@ -22,6 +22,7 @@ import (
 	"github.com/tink-crypto/tink-go/v2/aead"
 	"github.com/tink-crypto/tink-go/v2/hybrid"
 	"github.com/tink-crypto/tink-go/v2/insecurecleartextkeyset"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/internal/internalregistry"
 	"github.com/tink-crypto/tink-go/v2/keyset"
 	"github.com/tink-crypto/tink-go/v2/mac"
@@ -124,7 +125,7 @@ func TestWriteAndReadInJson(t *testing.T) {
 }
 
 func TestLegacyKeysetHandle(t *testing.T) {
-	if fipsEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping test cases for non-FIPS-compliant uses when testing in FIPS mode.")
 	}
 

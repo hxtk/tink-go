@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/subtle"
 	"github.com/tink-crypto/tink-go/v2/testutil"
 	"golang.org/x/crypto/curve25519"
 )
 
 func TestComputeSharedSecretX25519WithRFCTestVectors(t *testing.T) {
-	if fipsEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
 	}
 
@@ -84,7 +85,7 @@ type x25519Case struct {
 }
 
 func TestComputeSharedSecretX25519WithWycheproofVectors(t *testing.T) {
-	if fipsEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
 	}
 
@@ -136,7 +137,7 @@ func TestComputeSharedSecretX25519WithWycheproofVectors(t *testing.T) {
 }
 
 func TestComputeSharedSecretX25519Fails(t *testing.T) {
-	if fipsEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
 	}
 
@@ -174,7 +175,7 @@ func TestComputeSharedSecretX25519Fails(t *testing.T) {
 }
 
 func TestPublicFromPrivateX25519WithRFCTestVectors(t *testing.T) {
-	if fipsEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
 	}
 
@@ -206,7 +207,7 @@ func TestPublicFromPrivateX25519WithRFCTestVectors(t *testing.T) {
 }
 
 func TestPublicFromPrivateX25519Fails(t *testing.T) {
-	if fipsEnabled() {
+	if fips140.FIPSEnabled() {
 		t.Skip("Skipping non-FIPS primitive in FIPS mode.")
 	}
 

@@ -18,6 +18,7 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/subtle"
 )
 
@@ -137,7 +138,7 @@ func TestHKDFBasic(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if !test.fips && fipsEnabled() {
+			if !test.fips && fips140.FIPSEnabled() {
 				t.Skipf("Skipping non-FIPS test in FIPS mode: %s.", test.name)
 			}
 

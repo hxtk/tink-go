@@ -21,16 +21,16 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/proto"
 	"github.com/tink-crypto/tink-go/v2/core/registry"
 	"github.com/tink-crypto/tink-go/v2/internal/internalregistry"
 	"github.com/tink-crypto/tink-go/v2/mac/subtle"
-	"github.com/tink-crypto/tink-go/v2/subtle/random"
-	"github.com/tink-crypto/tink-go/v2/testutil"
-	"github.com/tink-crypto/tink-go/v2/tink"
 	commonpb "github.com/tink-crypto/tink-go/v2/proto/common_go_proto"
 	hmacpb "github.com/tink-crypto/tink-go/v2/proto/hmac_go_proto"
 	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
+	"github.com/tink-crypto/tink-go/v2/subtle/random"
+	"github.com/tink-crypto/tink-go/v2/testutil"
+	"github.com/tink-crypto/tink-go/v2/tink"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestGetPrimitiveWorks(t *testing.T) {

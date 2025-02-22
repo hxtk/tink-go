@@ -17,9 +17,8 @@ package subtle
 import (
 	"errors"
 	"fmt"
-	"io"
 
-	"golang.org/x/crypto/hkdf"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 )
 
 const (
@@ -59,11 +58,5 @@ func ComputeHKDF(hashAlg string, key []byte, salt []byte, info []byte, tagSize u
 		salt = make([]byte, hashFunc().Size())
 	}
 
-	result := make([]byte, tagSize)
-	kdf := hkdf.New(hashFunc, key, salt, info)
-	n, err := io.ReadFull(kdf, result)
-	if n != len(result) || err != nil {
-		return nil, fmt.Errorf("compute of hkdf failed")
-	}
-	return result, nil
+	return fips140.ComputeHKDF(hashFunc, key, salt, info, tagSize)
 }

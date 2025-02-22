@@ -23,9 +23,10 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	internal "github.com/tink-crypto/tink-go/v2/internal/signature"
-	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/subtle"
+	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/testutil"
 )
 
@@ -209,6 +210,10 @@ func TestRSASSAPKCS1VerifyFails(t *testing.T) {
 }
 
 func TestNewRSASSAPKCS1SignerVerifierInvalidInput(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping 1024-bit RSA in FIPS-mode test.")
+	}
+
 	validPrivKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		t.Fatalf("rsa.GenerateKey(rand.Reader, 2048) err = %v, want nil", err)

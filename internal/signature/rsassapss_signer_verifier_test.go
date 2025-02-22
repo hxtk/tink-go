@@ -23,9 +23,10 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/internal/signature"
-	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/subtle"
+	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/testutil"
 )
 
@@ -37,6 +38,7 @@ type rsaSSAPSSTestCase struct {
 	publicKey  *rsa.PublicKey
 	signature  []byte
 	message    []byte
+	fips       bool
 }
 
 func hexDecode(t *testing.T, value string) []byte {
@@ -154,6 +156,7 @@ func rsaSSAPSSTestCases(t *testing.T) []rsaSSAPSSTestCase {
 			"8c8eb99f2a541d9ef34f34054fda0d8a792822cc00f3f274fa0fcbf3c6a32f9fb85cba8dc713941f"+
 			"92a7a4f082693a2f79ff8198d6"),
 		message: hexDecode(t, "aa"),
+		fips:    true,
 	})
 	// Test vector 1.
 	testCases = append(testCases, rsaSSAPSSTestCase{
@@ -170,6 +173,7 @@ func rsaSSAPSSTestCases(t *testing.T) []rsaSSAPSSTestCase {
 			"67ff0e2dd1cbbacc9402ffee0acf41bbec54ea2bbe01edadf0382c8ab2a897580c1cdf4e412032a0"+
 			"83d1e5d47a625a38aac8c552e1"),
 		message: hexDecode(t, "aa"),
+		fips:    true,
 	})
 	// Test vector 5.
 	testCases = append(testCases, rsaSSAPSSTestCase{
@@ -186,6 +190,7 @@ func rsaSSAPSSTestCases(t *testing.T) []rsaSSAPSSTestCase {
 			"c1970947d630121df570ba577957dd23116e9bf4c2c826ec4b52223735dd0c355165485ff6652656"+
 			"aa471a190c7f40e26c85440fc8"),
 		message: hexDecode(t, "aa"),
+		fips:    false,
 	})
 	publicKey4096 := &rsa.PublicKey{
 		N: new(big.Int).SetBytes(base64Decode(t, n4096Base64)),
@@ -260,6 +265,10 @@ func rsaSSAPSSTestCases(t *testing.T) []rsaSSAPSSTestCase {
 func TestRSASSAPSSVerifyCorrectness(t *testing.T) {
 	for _, tc := range rsaSSAPSSTestCases(t) {
 		t.Run(tc.name, func(t *testing.T) {
+			if !tc.fips && fips140.FIPSEnabled() {
+				t.Skip("Skipping non-FIPS cryptographic usage in a FIPS-mode test.")
+			}
+
 			verifier, err := signature.New_RSA_SSA_PSS_Verifier(tc.hash, tc.saltLength, tc.publicKey)
 			if err != nil {
 				t.Fatalf("New_RSA_SSA_PSS_Verifier() err = %v, want nil", err)
