@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/prf/subtle"
 	"github.com/tink-crypto/tink-go/v2/testutil"
 )
@@ -32,6 +33,7 @@ type rfc5869test struct {
 	info         string
 	outputLength uint32
 	okm          string
+	noFIPS       bool
 }
 
 func TestVectorsRFC5869(t *testing.T) {
@@ -68,6 +70,7 @@ func TestVectorsRFC5869(t *testing.T) {
 			info:         "f0f1f2f3f4f5f6f7f8f9",
 			outputLength: 42,
 			okm:          "085a01ea1b10f36933068b56efa5ad81a4f14b822f5b091568a9cdd4f155fda2c22e422478d305f3f896",
+			noFIPS:       true, // Uses SHA1
 		},
 		{
 			hash:         "SHA1",
@@ -76,6 +79,7 @@ func TestVectorsRFC5869(t *testing.T) {
 			info:         "b0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff",
 			outputLength: 82,
 			okm:          "0bd770a74d1160f7c9f12cd5912a06ebff6adcae899d92191fe4305673ba2ffe8fa3f1a4e5ad79f3f334b3b202b2173c486ea37ce3d397ed034c7f9dfeb15c5e927336d0441f4c4300e2cff0d0900b52d3b4",
+			noFIPS:       true, // Uses SHA1
 		},
 		{
 			hash:         "SHA1",
@@ -84,6 +88,7 @@ func TestVectorsRFC5869(t *testing.T) {
 			info:         "",
 			outputLength: 42,
 			okm:          "0ac1af7002b3d761d1e55298da9d0506b9ae52057220a306e07b6b87e8df21d0ea00033de03984d34918",
+			noFIPS:       true, // Uses SHA1
 		},
 		{
 			hash:         "SHA1",
@@ -92,9 +97,15 @@ func TestVectorsRFC5869(t *testing.T) {
 			info:         "",
 			outputLength: 42,
 			okm:          "2c91117204d745f3500d636a62f64f0ab3bae548aa53d423b0d1f27ebba6f5e5673a081d70cce7acfc48",
+			noFIPS:       true, // Uses SHA1
 		},
 	}
 	for _, v := range testvectors {
+		if v.noFIPS && fips140.FIPSEnabled() {
+			t.Log("Skipping non-FIPS-conforming test case in FIPS mode.")
+			continue
+		}
+
 		key, err := hex.DecodeString(v.key)
 		if err != nil {
 			t.Errorf("Could not decode key: %v", err)
@@ -123,6 +134,11 @@ func TestVectorsRFC5869(t *testing.T) {
 
 func TestHKDFPRFWycheproofCases(t *testing.T) {
 	for _, hash := range []string{"SHA1", "SHA256", "SHA512"} {
+		if fips140.FIPSEnabled() && hash == "SHA1" {
+			t.Log("Skipping SHA1 test case in FIPS mode.")
+			continue
+		}
+
 		filename := fmt.Sprintf("hkdf_%s_test.json", strings.ToLower(hash))
 		suite := new(hkdfSuite)
 		if err := testutil.PopulateSuite(suite, filename); err != nil {
@@ -214,6 +230,11 @@ func TestHKDFPRFSalt(t *testing.T) {
 
 func TestHKDFPRFOutputLength(t *testing.T) {
 	for hash, length := range map[string]int{"SHA1": 20, "SHA256": 32, "SHA512": 64} {
+		if fips140.FIPSEnabled() && hash == "SHA1" {
+			t.Log("Skipping SHA1 test case in FIPS mode.")
+			continue
+		}
+
 		prf, err := subtle.NewHKDFPRF(hash, []byte{
 			0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 			0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,

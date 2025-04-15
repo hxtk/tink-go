@@ -21,14 +21,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/prf/subtle"
 	"github.com/tink-crypto/tink-go/v2/testutil"
 )
 
 type rfc4868test struct {
-	key  string
-	data string
-	prf  map[string]string
+	key    string
+	data   string
+	prf    map[string]string
+	noFIPS bool
 }
 
 func TestVectorsRFC4868(t *testing.T) {
@@ -49,6 +51,7 @@ func TestVectorsRFC4868(t *testing.T) {
 				"SHA256": "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843",
 				"SHA512": "164b7a7bfcf819e2e395fbe73b56e0a387bd64222e831fd610270cd7ea2505549758bf75c05a994a6d034f65f8f0e6fdcaeab1a34d4a6b4b636e070a38bce737",
 			},
+			noFIPS: true, // The key is too short for the FIPS requirement of 112 bits.
 		},
 		{
 			key:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -84,6 +87,10 @@ func TestVectorsRFC4868(t *testing.T) {
 		},
 	}
 	for _, v := range testvectors {
+		if v.noFIPS && fips140.FIPSEnabled() {
+			t.Skip("Skipping non-FIPS test in FIPS mode.")
+			continue
+		}
 		key, err := hex.DecodeString(v.key)
 		if err != nil {
 			t.Errorf("Could not decode key: %v", err)
@@ -124,6 +131,9 @@ func TestHMACPRFWycheproofCases(t *testing.T) {
 			for _, test := range group.Tests {
 				caseName := fmt.Sprintf("%s:Case-%d", groupName, test.CaseID)
 				t.Run(caseName, func(t *testing.T) {
+					if hash == "SHA1" && fips140.FIPSEnabled() {
+						t.Skipf("Skipping %s because it is not FIPS-compliant.", caseName)
+					}
 
 					h, err := subtle.NewHMACPRF(hash, test.Key)
 					switch test.Result {
@@ -185,6 +195,10 @@ func TestHMACPRFHash(t *testing.T) {
 
 func TestHMACPRFOutputLength(t *testing.T) {
 	for hash, length := range map[string]int{"SHA1": 20, "SHA256": 32, "SHA512": 64} {
+		if hash == "SHA1" && fips140.FIPSEnabled() {
+			t.Log("Skipping SHA1 because FIPS mode is enabled.")
+			continue
+		}
 		prf, err := subtle.NewHMACPRF(hash, []byte{
 			0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 			0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,

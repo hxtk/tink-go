@@ -21,16 +21,17 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/proto"
 	"github.com/tink-crypto/tink-go/v2/core/registry"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/internal/internalregistry"
 	"github.com/tink-crypto/tink-go/v2/prf"
 	"github.com/tink-crypto/tink-go/v2/prf/subtle"
-	"github.com/tink-crypto/tink-go/v2/subtle/random"
-	"github.com/tink-crypto/tink-go/v2/testutil"
 	commonpb "github.com/tink-crypto/tink-go/v2/proto/common_go_proto"
 	hmacpb "github.com/tink-crypto/tink-go/v2/proto/hmac_prf_go_proto"
 	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
+	"github.com/tink-crypto/tink-go/v2/subtle/random"
+	"github.com/tink-crypto/tink-go/v2/testutil"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestGetPrimitiveHMACBasic(t *testing.T) {
@@ -459,19 +460,33 @@ func genInvalidHMACPRFKeyFormats() []proto.Message {
 }
 
 func genValidHMACPRFKeyFormats() []*hmacpb.HmacPrfKeyFormat {
-	return []*hmacpb.HmacPrfKeyFormat{
-		testutil.NewHMACPRFKeyFormat(commonpb.HashType_SHA1),
+	formats := []*hmacpb.HmacPrfKeyFormat{
 		testutil.NewHMACPRFKeyFormat(commonpb.HashType_SHA256),
 		testutil.NewHMACPRFKeyFormat(commonpb.HashType_SHA512),
 	}
+	if !fips140.FIPSEnabled() {
+		formats = append(
+			formats,
+			testutil.NewHMACPRFKeyFormat(commonpb.HashType_SHA1),
+		)
+	}
+
+	return formats
 }
 
 func genValidHMACPRFKeys() []*hmacpb.HmacPrfKey {
-	return []*hmacpb.HmacPrfKey{
-		testutil.NewHMACPRFKey(commonpb.HashType_SHA1),
+	keys := []*hmacpb.HmacPrfKey{
 		testutil.NewHMACPRFKey(commonpb.HashType_SHA256),
 		testutil.NewHMACPRFKey(commonpb.HashType_SHA512),
 	}
+	if !fips140.FIPSEnabled() {
+		keys = append(
+			keys,
+			testutil.NewHMACPRFKey(commonpb.HashType_SHA1),
+		)
+	}
+
+	return keys
 }
 
 // Checks whether the given HMACPRFKey matches the given key HMACPRFKeyFormat
