@@ -21,17 +21,18 @@ import (
 	"strings"
 	"testing"
 
-	"google.golang.org/protobuf/proto"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/keyset"
 	"github.com/tink-crypto/tink-go/v2/mac"
+	ghpb "github.com/tink-crypto/tink-go/v2/proto/aes_gcm_hkdf_streaming_go_proto"
+	commonpb "github.com/tink-crypto/tink-go/v2/proto/common_go_proto"
+	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
 	"github.com/tink-crypto/tink-go/v2/streamingaead"
 	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/testkeyset"
 	"github.com/tink-crypto/tink-go/v2/testutil"
 	"github.com/tink-crypto/tink-go/v2/tink"
-	ghpb "github.com/tink-crypto/tink-go/v2/proto/aes_gcm_hkdf_streaming_go_proto"
-	commonpb "github.com/tink-crypto/tink-go/v2/proto/common_go_proto"
-	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -39,6 +40,10 @@ const (
 )
 
 func TestFactoryMultipleKeys(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyset := testutil.NewTestAESGCMHKDFKeyset()
 
 	keysetHandle, err := testkeyset.NewHandle(keyset)
@@ -149,6 +154,10 @@ func TestFactoryWithInvalidPrimitiveSetType(t *testing.T) {
 }
 
 func TestFactoryWithValidPrimitiveSetType(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	goodKH, err := keyset.NewHandle(streamingaead.AES128GCMHKDF4KBKeyTemplate())
 	if err != nil {
 		t.Fatalf("failed to build *keyset.Handle: %s", err)
@@ -161,6 +170,10 @@ func TestFactoryWithValidPrimitiveSetType(t *testing.T) {
 }
 
 func TestFactoryWithKeysetWithTinkKeys(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	key := &ghpb.AesGcmHkdfStreamingKey{
 		Version:  0,
 		KeyValue: []byte("0123456789abcdef"),

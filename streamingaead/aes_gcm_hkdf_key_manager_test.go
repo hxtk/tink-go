@@ -21,20 +21,25 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/proto"
 	"github.com/tink-crypto/tink-go/v2/core/registry"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/internal/internalregistry"
-	"github.com/tink-crypto/tink-go/v2/streamingaead/subtle"
-	"github.com/tink-crypto/tink-go/v2/subtle/random"
-	"github.com/tink-crypto/tink-go/v2/testutil"
 	gcmhkdfpb "github.com/tink-crypto/tink-go/v2/proto/aes_gcm_hkdf_streaming_go_proto"
 	commonpb "github.com/tink-crypto/tink-go/v2/proto/common_go_proto"
 	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
+	"github.com/tink-crypto/tink-go/v2/streamingaead/subtle"
+	"github.com/tink-crypto/tink-go/v2/subtle/random"
+	"github.com/tink-crypto/tink-go/v2/testutil"
+	"google.golang.org/protobuf/proto"
 )
 
 var aesGCMHKDFKeySizes = []uint32{16, 32}
 
 func TestAESGCMHKDFGetPrimitiveBasic(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -56,6 +61,10 @@ func TestAESGCMHKDFGetPrimitiveBasic(t *testing.T) {
 }
 
 func TestAESGCMHKDFGetPrimitiveWithInvalidInput(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -90,6 +99,10 @@ func TestAESGCMHKDFGetPrimitiveWithInvalidInput(t *testing.T) {
 }
 
 func TestAESGCMHKDFNewKeyMultipleTimes(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -125,6 +138,10 @@ func TestAESGCMHKDFNewKeyMultipleTimes(t *testing.T) {
 }
 
 func TestAESGCMHKDFNewKeyBasic(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -152,6 +169,10 @@ func TestAESGCMHKDFNewKeyBasic(t *testing.T) {
 }
 
 func TestAESGCMHKDFNewKeyWithInvalidInput(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -188,6 +209,10 @@ func TestAESGCMHKDFNewKeyWithInvalidInput(t *testing.T) {
 }
 
 func TestAESGCMHKDFNewKeyDataBasic(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -232,6 +257,10 @@ func TestAESGCMHKDFNewKeyDataBasic(t *testing.T) {
 }
 
 func TestAESGCMHKDFNewKeyDataWithInvalidInput(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	km, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -257,6 +286,10 @@ func TestAESGCMHKDFNewKeyDataWithInvalidInput(t *testing.T) {
 }
 
 func TestAESGCMHKDFDoesSupport(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -270,6 +303,10 @@ func TestAESGCMHKDFDoesSupport(t *testing.T) {
 }
 
 func TestAESGCMHKDFTypeURL(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	keyManager, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Errorf("cannot obtain AES-GCM-HKDF key manager: %s", err)
@@ -280,6 +317,10 @@ func TestAESGCMHKDFTypeURL(t *testing.T) {
 }
 
 func TestAESGCMHKDFKeyMaterialType(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	km, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Fatalf("registry.GetKeyManager(%q) err = %v, want nil", testutil.AESGCMHKDFTypeURL, err)
@@ -294,6 +335,10 @@ func TestAESGCMHKDFKeyMaterialType(t *testing.T) {
 }
 
 func TestAESGCMHKDFDeriveKey(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	km, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Fatalf("registry.GetKeyManager(%q) err = %v, want nil", testutil.AESGCMHKDFTypeURL, err)
@@ -336,6 +381,10 @@ func TestAESGCMHKDFDeriveKey(t *testing.T) {
 }
 
 func TestAESGCMHKDFDeriveKeyFailsWithInvalidKeyFormats(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	km, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Fatalf("registry.GetKeyManager(%q) err = %v, want nil", testutil.AESGCMHKDFTypeURL, err)
@@ -458,6 +507,10 @@ func TestAESGCMHKDFDeriveKeyFailsWithInvalidKeyFormats(t *testing.T) {
 }
 
 func TestAESGCMHKDFDeriveKeyFailsWithMalformedKeyFormats(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	km, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Fatalf("registry.GetKeyManager(%q) err = %v, want nil", testutil.AESGCMHKDFTypeURL, err)
@@ -499,6 +552,10 @@ func TestAESGCMHKDFDeriveKeyFailsWithMalformedKeyFormats(t *testing.T) {
 }
 
 func TestAESGCMHKDFDeriveKeyFailsWithInsufficientRandomness(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	km, err := registry.GetKeyManager(testutil.AESGCMHKDFTypeURL)
 	if err != nil {
 		t.Fatalf("registry.GetKeyManager(%q) err = %v, want nil", testutil.AESGCMHKDFTypeURL, err)

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/streamingaead/subtle"
 )
 
@@ -344,6 +345,7 @@ func TestAESCTRHMACWithValidParameters(t *testing.T) {
 		tagAlg         string
 		keySizeInBytes int
 		tagSizeInBytes int
+		noFIPS         bool
 	}{
 		// smallest possible key and tag sizes
 		{
@@ -351,6 +353,7 @@ func TestAESCTRHMACWithValidParameters(t *testing.T) {
 			tagAlg:         "SHA1",
 			keySizeInBytes: 16,
 			tagSizeInBytes: 10,
+			noFIPS:         true, // Uses SHA1
 		},
 		{
 			hkdfAlg:        "SHA256",
@@ -382,6 +385,7 @@ func TestAESCTRHMACWithValidParameters(t *testing.T) {
 			tagAlg:         "SHA1",
 			keySizeInBytes: 16,
 			tagSizeInBytes: 20,
+			noFIPS:         true, // Uses SHA1
 		},
 		{
 			hkdfAlg:        "SHA256",
@@ -413,6 +417,7 @@ func TestAESCTRHMACWithValidParameters(t *testing.T) {
 			tagAlg:         "SHA256",
 			keySizeInBytes: 16,
 			tagSizeInBytes: 10,
+			noFIPS:         true, // Uses SHA1
 		},
 		{
 			hkdfAlg:        "SHA224",
@@ -437,6 +442,7 @@ func TestAESCTRHMACWithValidParameters(t *testing.T) {
 			tagAlg:         "SHA1",
 			keySizeInBytes: 16,
 			tagSizeInBytes: 10,
+			noFIPS:         true, // Uses SHA1
 		},
 		{
 			hkdfAlg:        "SHA256",
@@ -459,6 +465,10 @@ func TestAESCTRHMACWithValidParameters(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s-%s-%d-%d", tc.hkdfAlg, tc.tagAlg, tc.keySizeInBytes, tc.tagSizeInBytes), func(t *testing.T) {
+			if tc.noFIPS && fips140.FIPSEnabled() {
+				t.Skip("Skipping non-conforming test under FIPS mode.")
+			}
+
 			primitive, err := subtle.NewAESCTRHMAC(mainKey, tc.hkdfAlg, tc.keySizeInBytes, tc.tagAlg, tc.tagSizeInBytes, segmentSize, firstSegmentOffset)
 			if err != nil {
 				t.Fatalf("subtle.NewAESCTRHMAC err = %v, want nil", err)

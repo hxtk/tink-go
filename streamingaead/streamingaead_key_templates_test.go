@@ -19,30 +19,42 @@ import (
 	"io"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/keyset"
-	"github.com/tink-crypto/tink-go/v2/streamingaead"
 	tinkpb "github.com/tink-crypto/tink-go/v2/proto/tink_go_proto"
+	"github.com/tink-crypto/tink-go/v2/streamingaead"
 )
 
 func TestKeyTemplates(t *testing.T) {
 	var testCases = []struct {
 		name     string
 		template *tinkpb.KeyTemplate
+		noFIPS   bool
 	}{
 		{
 			name:     "AES128_GCM_HKDF_4KB",
 			template: streamingaead.AES128GCMHKDF4KBKeyTemplate(),
+
+			// Uses GCM with non-FIPS-conforming nonce-generation scheme.
+			// See FIPS140-3 Annex C.H. for approved generation scehmes. Sections
+			// 4 and 5 require validation under the Cryptographic Module Verification Program
+			// and would therefore have to be implemented within the FIPS module boundary, which
+			// is beyond the scope of Tink.
+			noFIPS: true,
 		},
 		{
 			name:     "AES128_GCM_HKDF_1MB",
 			template: streamingaead.AES128GCMHKDF1MBKeyTemplate(),
+			noFIPS:   true, // Non-conforming GCM Nonce
 		},
 		{
 			name:     "AES256_GCM_HKDF_4KB",
 			template: streamingaead.AES256GCMHKDF4KBKeyTemplate(),
+			noFIPS:   true, // Non-conforming GCM Nonce
 		}, {
 			name:     "AES256_GCM_HKDF_1MB",
 			template: streamingaead.AES256GCMHKDF1MBKeyTemplate(),
+			noFIPS:   true, // Non-conforming GCM Nonce
 		}, {
 			name:     "AES128_CTR_HMAC_SHA256_4KB",
 			template: streamingaead.AES128CTRHMACSHA256Segment4KBKeyTemplate(),
@@ -62,6 +74,9 @@ func TestKeyTemplates(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.noFIPS && fips140.FIPSEnabled() {
+				t.Skipf("Skipping %s under FIPS mode due to expected non-conformance.", tc.name)
+			}
 			handle, err := keyset.NewHandle(tc.template)
 			if err != nil {
 				t.Fatalf("keyset.NewHandle(template) failed: %v", err)

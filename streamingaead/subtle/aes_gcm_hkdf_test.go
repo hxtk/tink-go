@@ -18,10 +18,15 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/streamingaead/subtle"
 )
 
 func TestAESGCMHKDFEncryptDecrypt(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	testCases := []struct {
 		name               string
 		keySizeInBytes     int
@@ -211,6 +216,10 @@ func TestAESGCMHKDFEncryptDecrypt(t *testing.T) {
 }
 
 func TestAESGCMHKDFModifiedCiphertext(t *testing.T) {
+	if fips140.FIPSEnabled() {
+		t.Skip("Skipping non-conforming use of GCM under FIPS mode.")
+	}
+
 	ikm, err := hex.DecodeString("000102030405060708090a0b0c0d0e0f00112233445566778899aabbccddeeff")
 	if err != nil {
 		t.Fatal(err)
