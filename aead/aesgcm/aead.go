@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/tink-crypto/tink-go/v2/insecuresecretdataaccess"
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/key"
 	"github.com/tink-crypto/tink-go/v2/tink"
 )
@@ -85,7 +86,7 @@ func NewAEAD(k *Key) (tink.AEAD, error) {
 	if err != nil {
 		return nil, fmt.Errorf("aesgcm.NewAEAD: failed to initialize cipher")
 	}
-	aeadCipher, err := cipher.NewGCMWithRandomNonce(c)
+	aeadCipher, err := fips140.NewGCM(c)
 	if err != nil {
 		return nil, fmt.Errorf("aesgcm.NewAEAD: failed to create cipher.AEAD")
 	}
