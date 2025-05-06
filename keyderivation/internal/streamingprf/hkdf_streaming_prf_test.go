@@ -22,6 +22,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tink-crypto/tink-go/v2/internal/fips140"
 	"github.com/tink-crypto/tink-go/v2/subtle/random"
 	"github.com/tink-crypto/tink-go/v2/testutil"
 )
@@ -172,6 +173,9 @@ func TestHKDFStreamingPRFWithWycheproof(t *testing.T) {
 			for _, test := range group.Tests {
 				caseName := fmt.Sprintf("%s(%d):Case-%d", hash, group.KeySize, test.CaseID)
 				t.Run(caseName, func(t *testing.T) {
+					if len(test.Salt) < 14 && fips140.FIPSEnabled() {
+						t.Skip("Skipping non-FIPS-compliant test in FIPS mode.")
+					}
 					if got, want := len(test.IKM), int(group.KeySize/8); got != want {
 						t.Fatalf("invalid key length = %d, want %d", got, want)
 					}
@@ -221,7 +225,10 @@ func TestHKDFStreamingPRFWithWycheproof(t *testing.T) {
 			}
 		}
 	}
-	if count < 200 {
+	if count < 200 && !fips140.FIPSEnabled() {
+		t.Errorf("number of test cases = %d, want > 200", count)
+	}
+	if count < 157 && fips140.FIPSEnabled() {
 		t.Errorf("number of test cases = %d, want > 200", count)
 	}
 }
